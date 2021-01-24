@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	queryInsertUser       = "INSERT INTO users(first_name, last_name, email, date_created, status, password) VALUES(?, ?, ?, ?,?,?);"
-	queryGetUser          = "SELECT id, first_name, last_name, email,date_created, status FROM users WHERE id=?;"
-	queryUpdateUser       = "UPDATE users SET first_name=?, last_name=?, email=?, status=? WHERE id=?;"
-	queryDeleteUser       = "DELETE FROM users WHERE id=?;"
-	queryFindUserByStatus = "SELECT id, first_name, last_name, email,date_created, status FROM users WHERE status=?;"
+	queryInsertUser             = "INSERT INTO users(first_name, last_name, email, date_created, status, password) VALUES(?, ?, ?, ?,?,?);"
+	queryGetUser                = "SELECT id, first_name, last_name, email,date_created, status FROM users WHERE id=?;"
+	queryUpdateUser             = "UPDATE users SET first_name=?, last_name=?, email=?, status=? WHERE id=?;"
+	queryDeleteUser             = "DELETE FROM users WHERE id=?;"
+	queryFindUserByStatus       = "SELECT id, first_name, last_name, email,date_created, status FROM users WHERE status=?;"
+	queryFindByEmailAndPassword = "SELECT id, first_name, last_name, email,date_created, status FROM users WHERE email=? AND password=?;"
 )
 
 // GET get a user in database
@@ -114,4 +115,20 @@ func (user *User) FindByStatus(status string) ([]User, *errors.RestErr) {
 		return nil, errors.NewNotFoundError(fmt.Sprintf("no user with status %s found", status))
 	}
 	return results, nil
+}
+
+// FindByEmailAndPassword get a user from database by matching email and password
+func (user *User) FindByEmailAndPassword() *errors.RestErr {
+	stmt, err := usersdb.Client.Prepare(queryFindByEmailAndPassword)
+	if err != nil {
+		logger.Error("error when trying to prepare finding user stmt by using email and password", err)
+		return errors.NewInternalServerError("database error")
+	}
+	defer stmt.Close()
+	result := stmt.QueryRow(user.Email, user.Password)
+	if err := result.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status); err != nil {
+		logger.Error("error when trying to Query get user from database by email and password", err)
+		return errors.NewInternalServerError("database error")
+	}
+	return nil
 }

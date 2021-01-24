@@ -17,10 +17,11 @@ var (
 type usersService struct{}
 type usersServiceInterface interface {
 	GetUser(userID int64) (*users.User, *errors.RestErr)
-	CreateUser(user users.User) (*users.User, *errors.RestErr)
-	UpdateUser(user users.User) (*users.User, *errors.RestErr)
-	DeleteUser(userID int64) *errors.RestErr
-	SearchUser(status string) (users.Users, *errors.RestErr)
+	CreateUser(users.User) (*users.User, *errors.RestErr)
+	UpdateUser(users.User) (*users.User, *errors.RestErr)
+	DeleteUser(int64) *errors.RestErr
+	SearchUser(string) (users.Users, *errors.RestErr)
+	LoginUser(users.LoginRequest) (*users.User, *errors.RestErr)
 }
 
 // GetUser return a user
@@ -82,4 +83,15 @@ func (s *usersService) DeleteUser(userID int64) *errors.RestErr {
 func (s *usersService) SearchUser(status string) (users.Users, *errors.RestErr) {
 	dao := &users.User{}
 	return dao.FindByStatus(status)
+}
+
+func (s *usersService) LoginUser(request users.LoginRequest) (*users.User, *errors.RestErr) {
+	dao := &users.User{
+		Email:    request.Email,
+		Password: request.Password,
+	}
+	if err := dao.FindByEmailAndPassword(); err != nil {
+		return nil, err
+	}
+	return dao, nil
 }
