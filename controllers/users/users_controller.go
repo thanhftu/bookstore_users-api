@@ -109,6 +109,7 @@ func Login(c *gin.Context) {
 		return
 	}
 	user, err := services.UsersService.LoginUser(loginRequest)
+	// fmt.Println(loginRequest)
 	if err != nil {
 		c.JSON(err.Status, err)
 		return

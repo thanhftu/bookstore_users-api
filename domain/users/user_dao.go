@@ -2,9 +2,11 @@ package users
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/thanhftu/bookstore_users-api/datasources/mysql/usersdb"
 	"github.com/thanhftu/bookstore_users-api/utils/errors"
+	"github.com/thanhftu/bookstore_users-api/utils/mysqlutils"
 	"github.com/thanhftu/bookstore_utils-go/logger"
 )
 
@@ -44,7 +46,7 @@ func (user *User) SAVE() *errors.RestErr {
 	insertResult, saveErr := stmt.Exec(user.FirstName, user.LastName, user.Email, user.DateCreated, user.Status, user.Password)
 	if saveErr != nil {
 		logger.Error("error when trying to executing query saving user into database", saveErr)
-		return errors.NewInternalServerError("database error")
+		return mysqlutils.ParseError(saveErr)
 	}
 	userID, errInsrt := insertResult.LastInsertId()
 	if errInsrt != nil {
@@ -127,6 +129,10 @@ func (user *User) FindByEmailAndPassword() *errors.RestErr {
 	defer stmt.Close()
 	result := stmt.QueryRow(user.Email, user.Password)
 	if err := result.Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.DateCreated, &user.Status); err != nil {
+		if strings.Contains(err.Error(), mysqlutils.ErrNoRowFound) {
+			logger.Error("Invalid user credential", err)
+			return errors.NewNotFoundError("invalid user credential")
+		}
 		logger.Error("error when trying to Query get user from database by email and password", err)
 		return errors.NewInternalServerError("database error")
 	}
