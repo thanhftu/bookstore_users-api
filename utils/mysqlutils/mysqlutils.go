@@ -1,11 +1,12 @@
 package mysqlutils
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/thanhftu/bookstore_users-api/utils/errors"
+	"github.com/thanhftu/bookstore_utils-go/resterrors"
 )
 
 const (
@@ -14,17 +15,17 @@ const (
 )
 
 // ParseError handles error relating to mysql
-func ParseError(err error) *errors.RestErr {
+func ParseError(err error) *resterrors.RestErr {
 	sqlErr, ok := err.(*mysql.MySQLError)
 	if !ok {
 		if strings.Contains(err.Error(), ErrNoRowFound) {
-			return errors.NewNotFoundError(fmt.Sprintf("no user with given id found"))
+			return resterrors.NewNotFoundError(fmt.Sprintf("no user with given id found"))
 		}
-		return errors.NewInternalServerError("error when parsing database response")
+		return resterrors.NewInternalServerError("error when parsing database response", errors.New("database error"))
 	}
 	switch sqlErr.Number {
 	case 1062:
-		return errors.NewBadRequestError("invalid data, email already existed")
+		return resterrors.NewBadRequestError("invalid data, email already existed")
 	}
-	return errors.NewInternalServerError("error processing request")
+	return resterrors.NewInternalServerError("error processing request", errors.New("database error"))
 }

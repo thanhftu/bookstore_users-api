@@ -13,7 +13,8 @@ require (
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.1 // indirect
-	github.com/thanhftu/bookstore_utils-go v0.0.0-20200415083059-417cfeb49213
+	github.com/thanhftu/bookstore_oauth-go v0.0.0-20210209064353-7bd64e332ae8
+	github.com/thanhftu/bookstore_utils-go v0.0.0-20210213053246-00b47a49602a
 	github.com/ugorji/go v1.2.2 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.16.0
